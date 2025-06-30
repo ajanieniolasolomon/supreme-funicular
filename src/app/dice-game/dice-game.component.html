@@ -1,0 +1,273 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Email Login Section -->
+  <div *ngIf="!user" class="bg-white/10 backdrop-blur-md rounded-2xl p-8 mb-8">
+    <h2 class="text-2xl font-bold text-white mb-6 text-center">Enter Your Email to Play</h2>
+    <form [formGroup]="emailForm" (ngSubmit)="onEmailSubmit()" class="max-w-md mx-auto">
+      <div class="mb-4">
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          class="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:border-white focus:outline-none"
+        />
+      </div>
+      <button
+        type="submit"
+        [disabled]="!emailForm.valid"
+        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold disabled:opacity-50 hover:from-purple-700 hover:to-pink-700 transition-all"
+      >
+        Start Playing
+      </button>
+    </form>
+  </div>
+
+  <!-- Game Section -->
+  <div *ngIf="user" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- User Info & Balance -->
+    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6">
+      <h3 class="text-xl font-bold text-white mb-4">Player Info</h3>
+      <div class="space-y-3">
+        <p class="text-white/80 text-sm">{{ user.email }}</p>
+        <div class="text-center py-4">
+          <div class="text-3xl font-bold text-green-400">${{ currentBalance | number:'1.2-2' }}</div>
+          <div class="text-sm text-white/60">Current Balance</div>
+        </div>
+        
+        <div class="space-y-2">
+          <button
+            (click)="refreshBalance()"
+            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            🔄 Refresh Balance
+          </button>
+          
+          <button
+            (click)="toggleBalanceDetails()"
+            class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+          >
+            📊 {{ showBalanceDetails ? 'Hide' : 'Show' }} Details
+          </button>
+        </div>
+
+        <!-- Balance Details -->
+        <div *ngIf="showBalanceDetails" class="mt-4 space-y-3">
+          <!-- Today's Transactions -->
+          <div class="bg-white/5 rounded-lg p-3">
+            <h4 class="text-sm font-semibold text-white mb-2">Today's Activity</h4>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              <div *ngFor="let tx of todayTransactions" class="flex justify-between text-xs">
+                <span class="text-white/70">{{ tx.type.replace('_', ' ') }}</span>
+                <span [class]="getTransactionTypeClass(tx.type)">
+                  {{ getTransactionSign(tx.type) }}${{ tx.amount | number:'1.2-2' }}
+                </span>
+              </div>
+              <div *ngIf="todayTransactions.length === 0" class="text-xs text-white/50">
+                No transactions today
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance History -->
+          <div class="bg-white/5 rounded-lg p-3">
+            <h4 class="text-sm font-semibold text-white mb-2">Last 7 Days</h4>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              <div *ngFor="let balance of balanceHistory" class="flex justify-between text-xs">
+                <span class="text-white/70">{{ balance.date | date:'MMM dd' }}</span>
+                <span class="text-green-400">${{ balance.balance | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Dice Game -->
+    <div class="lg:col-span-2 bg-white/10 backdrop-blur-md rounded-2xl p-8">
+      <h3 class="text-2xl font-bold text-white mb-6 text-center">🎲 Roll the Dice</h3>
+      
+      <!-- 3D Dice Game Area -->
+      <div class="dice-game-area">
+        <!-- Game Result Display -->
+        <div *ngIf="lastGameResult" class="mb-6 p-4 rounded-lg" 
+             [class]="lastGameResult.isWin ? 'bg-green-500/20 border border-green-500/50' : 'bg-red-500/20 border border-red-500/50'">
+          <div class="text-center">
+            <div class="text-2xl font-bold" [class]="lastGameResult.isWin ? 'text-green-400' : 'text-red-400'">
+              {{ lastGameResult.isWin ? '🎉 YOU WON!' : '💔 YOU LOST' }}
+            </div>
+            <div class="text-white/80 mt-2">
+              Predicted: {{ lastGameResult.prediction }} | Rolled: {{ lastGameResult.diceResult }}
+            </div>
+            <div class="text-white/80">
+              Payout: ${{ lastGameResult.payout | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- 3D Dice -->
+        <div class="flex justify-center mb-8">
+          <div class="dice-container" [class.rolling]="isRolling">
+            <div class="dice" [attr.data-value]="diceValue" (click)="onDiceClick()">
+              <!-- Face 1 (Front) -->
+              <div class="face front">
+                <div class="dots dots-1" *ngIf="diceValue === 1"></div>
+                <div class="dots dots-2" *ngIf="diceValue === 2"></div>
+                <div class="dots dots-3" *ngIf="diceValue === 3"></div>
+                <div class="dots dots-4" *ngIf="diceValue === 4"></div>
+                <div class="dots dots-5" *ngIf="diceValue === 5"></div>
+                <div class="dots dots-6" *ngIf="diceValue === 6"></div>
+              </div>
+              
+              <!-- Face 2 (Back) -->
+              <div class="face back">
+                <div class="dots dots-{{ 7 - diceValue }}"></div>
+              </div>
+              
+              <!-- Face 3 (Right) -->
+              <div class="face right">
+                <div class="dots dots-3"></div>
+              </div>
+              
+              <!-- Face 4 (Left) -->
+              <div class="face left">
+                <div class="dots dots-4"></div>
+              </div>
+              
+              <!-- Face 5 (Top) -->
+              <div class="face top">
+                <div class="dots dots-5"></div>
+              </div>
+              
+              <!-- Face 6 (Bottom) -->
+              <div class="face bottom">
+                <div class="dots dots-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dice Info -->
+        <div class="text-center mb-6">
+          <div class="text-white/70 text-sm">
+            {{ isRolling ? 'Rolling...' : 'Click dice for preview' }}
+          </div>
+          <div class="text-2xl font-bold text-white mt-2">
+            Current: {{ diceValue }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Form -->
+      <form [formGroup]="gameForm" (ngSubmit)="onRollDice()" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-white/80 text-sm font-medium mb-2">Predict Number (1-6)</label>
+            <select
+              formControlName="prediction"
+              class="w-full px-4 py-3 rounded-lg bg-white/20 text-white border border-white/30 focus:border-white focus:outline-none"
+            >
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-white/80 text-sm font-medium mb-2">Bet Amount</label>
+            <input
+              type="number"
+              formControlName="betAmount"
+              min="0.01"
+              step="0.01"
+              [max]="currentBalance"
+              placeholder="Enter bet amount"
+              class="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:border-white focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div class="text-white/70 text-sm mb-4">
+            Win 5x your bet! (Potential Payout: ${{ (gameForm.get('betAmount')?.value * 5) | number:'1.2-2' }})
+          </div>
+          
+          <div class="roll-button-container">
+            <button
+              type="submit"
+              [disabled]="!gameForm.valid || isRolling || currentBalance < gameForm.get('betAmount')?.value"
+              class="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-4 px-8 rounded-lg font-bold text-lg disabled:opacity-50 hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+            >
+              <span *ngIf="!isRolling">🎲 ROLL DICE</span>
+              <span *ngIf="isRolling">
+                <span class="inline-block animate-spin">🎲</span> ROLLING...
+              </span>
+            </button>
+          </div>
+          
+          <div *ngIf="currentBalance < gameForm.get('betAmount')?.value" class="mt-3 p-3 bg-red-500/20 border border-red-500/50 rounded-lg">
+            <div class="text-red-400 text-sm font-medium">
+              ⚠️ Insufficient balance. Please deposit funds to continue playing.
+            </div>
+            <button 
+              (click)="showPaymentModal = true"
+              class="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+            >
+              Add Funds
+            </button>
+
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Game History -->
+    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-6">
+      <h3 class="text-xl font-bold text-white mb-4">🎯 Recent Games</h3>
+      <div class="space-y-3 max-h-96 overflow-y-auto">
+        <div *ngFor="let game of gameHistory" 
+             class="bg-white/5 rounded-lg p-3 border-l-4"
+             [class]="game.isWin ? 'border-green-500' : 'border-red-500'">
+          <div class="flex justify-between items-start">
+            <div class="text-sm">
+              <div class="font-medium" [class]="game.isWin ? 'text-green-400' : 'text-red-400'">
+                {{ game.isWin ? 'WIN' : 'LOSS' }}
+              </div>
+              <div class="text-white/70">
+                Predicted: {{ game.prediction }}
+              </div>
+              <div class="text-white/70">
+                Rolled: {{ game.result }}
+              </div>
+            </div>
+            <div class="text-right text-sm">
+              <div class="text-white/80">
+                Bet: ${{ game.betAmount | number:'1.2-2' }}
+              </div>
+              <div class="font-medium" [class]="game.isWin ? 'text-green-400' : 'text-red-400'">
+                {{ game.isWin ? '+' : '-' }}${{ game.isWin ? game.payout : game.betAmount | number:'1.2-2' }}
+              </div>
+            </div>
+          </div>
+          <div class="text-xs text-white/50 mt-1">
+            {{ game.createdAt | date:'short' }}
+          </div>
+        </div>
+        
+        <div *ngIf="gameHistory.length === 0" class="text-center text-white/50 py-8">
+          No games played yet. Start rolling!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal (Inline Implementation) -->
+   <app-payment-modal
+  *ngIf="showPaymentModal"
+  [currentBalance]="currentBalance"
+[userId]="user?.id || ''"
+  (close)="showPaymentModal = false"
+  (paymentComplete)="onPaymentComplete()">
+</app-payment-modal>
+</div>

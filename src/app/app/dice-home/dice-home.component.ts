@@ -3,16 +3,17 @@ import { Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { RouterModule, RouterOutlet } from '@angular/router';
-import { DiceGameComponent } from './dice-game/dice-game.component';
+import { RouterOutlet } from '@angular/router';
+import { DiceGameComponent } from '../../dice-game/dice-game.component';
+
 
 @Component({
-  selector: 'app-root',
-    imports: [RouterModule],
+  selector: 'dice-home',
+    imports: [DiceGameComponent],
 
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  templateUrl: './dice-home.component.html',
+  styleUrl: './dice-home.component.scss'
 })
-export class AppComponent {
+export class DiceHomeComponent {
   title = 'casion';
 }
