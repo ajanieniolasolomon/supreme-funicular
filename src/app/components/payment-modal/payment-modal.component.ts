@@ -210,7 +210,7 @@ export class PaymentModalComponent {
         throw new Error('Payment API key not configured');
       }
 
-      const paymentUrl = 'https://api.nowpayments.io/v1/invoice';
+      const paymentUrl = 'https://api-sandbox.nowpayments.io/v1/invoice';
 
       // Generate unique order ID
       const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
