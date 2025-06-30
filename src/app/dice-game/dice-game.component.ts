@@ -43,7 +43,9 @@ export class DiceGameComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+ 
+  }
 
   onEmailSubmit() {
     if (this.emailForm.valid) {
@@ -53,6 +55,7 @@ export class DiceGameComponent implements OnInit {
           this.user = user;
           this.currentBalance = user.currentBalance || 0;
           this.loadUserData();
+     
         },
         error: (error) => {
           console.error('Login failed:', error);
@@ -66,6 +69,7 @@ export class DiceGameComponent implements OnInit {
       this.loadGameHistory();
       this.loadTodayTransactions();
       this.loadBalanceHistory();
+        this.refreshBalance();
     }
   }
 

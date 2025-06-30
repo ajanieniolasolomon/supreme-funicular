@@ -220,10 +220,13 @@ export class PaymentModalComponent {
         price_currency: 'usd',
         order_id: orderId,
         order_description: `Dice Casino Deposit - ${this.selectedAmount}`,
-        ipn_callback_url: `${environment.apiUrl}/payment/webhook`,
+      //  ipn_callback_url: `${environment.apiUrl}/payment/webhook`,
+     ipn_callback_url: 'https://casion-xdao.vercel.app/payment/webhook',
         success_url: `${window.location.origin}/success`,
         cancel_url: `${window.location.origin}/cancel`
       };
+
+      console.log(paymentData);
 
       const headers = new HttpHeaders({
         'Content-Type': 'application/json',
@@ -234,7 +237,7 @@ export class PaymentModalComponent {
       const response = await firstValueFrom(
         this.http.post<PaymentResponse>(paymentUrl, paymentData, { headers })
       );
-
+console.log(response);
       if (response && response.invoice_url) {
         // Store payment info in localStorage for tracking
         const paymentInfo = {
@@ -274,7 +277,7 @@ export class PaymentModalComponent {
           userId: this.userId,
           amount: this.selectedAmount,
           currency: this.selectedCurrency,
-          paymentId: response.invoice_id,
+          paymentId: response.invoice_url.toString().split('iid=')[1],
           paymentUrl: response.invoice_url
         })
       );
