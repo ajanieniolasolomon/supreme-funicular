@@ -6,5 +6,5 @@
 export const environment = {
   production: true,
   apiUrl: 'https://casion-xdao.vercel.app',
-nowPaymentsApiKey: 'TB1JMZM-XA8M2QJ-G097CQ0-AZAR0MW'
+nowPaymentsApiKey: 'VWYXXJS-9YW4NDQ-PP7TXZZ-CT04P8F'
 };
